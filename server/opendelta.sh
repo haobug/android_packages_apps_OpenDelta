@@ -17,19 +17,24 @@ fi
 
 # ------ CONFIGURATION ------
 
-HOME=/home/build
+#HOME=/home/build
+HOME=/home2/tmp/merge_delta/build
 
 BIN_JAVA=java
 BIN_MINSIGNAPK=$HOME/delta/minsignapk.jar
 BIN_XDELTA=$HOME/delta/xdelta3
 BIN_ZIPADJUST=$HOME/delta/zipadjust
 
-FILE_MATCH=omni-*.zip
-PATH_CURRENT=$HOME/omni/out/target/product/$DEVICE
+#FILE_MATCH=omni-*.zip
+#PATH_CURRENT=$HOME/omni/out/target/product/$DEVICE
+FILE_MATCH=update*.zip
+PATH_CURRENT=$HOME/delta/curr/$DEVICE
 PATH_LAST=$HOME/delta/last/$DEVICE
 
-KEY_X509=$HOME/.keys/platform.x509.pem
-KEY_PK8=$HOME/.keys/platform.pk8
+#KEY_X509=$HOME/.keys/platform.x509.pem
+#KEY_PK8=$HOME/.keys/platform.pk8
+KEY_X509=$HOME/.keys/releasekey.x509.pem
+KEY_PK8=$HOME/.keys/releasekey.pk8
 
 # ------ PROCESS ------
 
@@ -139,9 +144,9 @@ echo "      \"md5_official\": \"$MD5_CURRENT\"" >> $DELTA
 echo "  }" >> $DELTA
 echo "}" >> $DELTA
 
-mkdir publish >/dev/null 2>/dev/null
-mkdir publish/$DEVICE >/dev/null 2>/dev/null
-cp out/* publish/$DEVICE/.
+mkdir ${HOME}/publish >/dev/null 2>/dev/null
+mkdir ${HOME}/publish/$DEVICE >/dev/null 2>/dev/null
+cp out/* ${HOME}/publish/$DEVICE/.
 
 rm -rf work
 rm -rf out
