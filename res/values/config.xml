@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Output some debug strings -->
-    <item type="bool" name="debug_output">false</item>
+    <item type="bool" name="debug_output">true</item>
 
     <!-- Property to read for ROM version -->
     <string name="property_version">ro.omni.version</string>
