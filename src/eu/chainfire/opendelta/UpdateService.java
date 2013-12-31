@@ -264,7 +264,7 @@ public class UpdateService
             if (ACTION_CHECK.equals(intent.getAction())) {
                 checkForUpdates(true);
             } else if (ACTION_FLASH.equals(intent.getAction())) {
-                flashUpdate();
+            	flashUpdateMTK();
             } else if (ACTION_ALARM.equals(intent.getAction())) {
                 scheduler.alarm(intent.getIntExtra(EXTRA_ALARM_ID, -1));
                 autoState();
@@ -972,7 +972,60 @@ public class UpdateService
             IOException {
         os.write((s + "\n").getBytes("UTF-8"));
     }
+    
+    private static final String REBOOT_INTENT = "com.mediatek.intent.systemupdate.RebootRecoveryService";
+    private static final String WRITE_COMMAND_INTENT = "com.mediatek.intent.systemupdate.WriteCommandService";
+    private static final String COMMAND_PART2 = "COMMANDPART2";
+    private static final String OTA_PATH_IN_RECOVERY_PRE = "/sdcard/";
+    private static final String COMMAND_PATH = "/cache/recovery";
+    private static final String COMMAND_FILE = "/cache/recovery/command";
+    
+    @SuppressLint("SdCardPath")
+    private void flashUpdateMTK() {    	
+        if (getPackageManager().checkPermission(PERMISSION_ACCESS_CACHE_FILESYSTEM,
+                getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+            Logger.d("[%s] required beyond this point", PERMISSION_ACCESS_CACHE_FILESYSTEM);
+            return;
+        }
 
+        if (getPackageManager().checkPermission(PERMISSION_REBOOT, getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+            Logger.d("[%s] required beyond this point", PERMISSION_REBOOT);
+            return;
+        }
+
+        String flashFilename = prefs.getString(PREF_READY_FILENAME_NAME,
+                PREF_READY_FILENAME_DEFAULT);
+        prefs.edit().putString(PREF_READY_FILENAME_NAME, PREF_READY_FILENAME_DEFAULT).commit();
+        if ((flashFilename == null) || !flashFilename.startsWith(config.getPathBase()))
+            return;
+
+        // Remove the path to the storage from the filename, so we get a path
+        // relative to the root of the storage
+        String path_sd = Environment.getExternalStorageDirectory() + File.separator;
+        flashFilename = flashFilename.substring(path_sd.length());
+
+        // Find additional ZIPs to flash, strip path to sd
+//        List<String> extras = config.getFlashAfterUpdateZIPs();
+//        for (int i = 0; i < extras.size(); i++) {
+//            extras.set(i, extras.get(i).substring(path_sd.length()));
+//        }
+      
+        try {
+      	FileOutputStream os = new FileOutputStream("/cache/recovery/command",
+                  false);
+      	writeString(os, "--update_package=" + OTA_PATH_IN_RECOVERY_PRE + "/" + flashFilename);
+        }catch (Exception e) {            
+            Logger.ex(e);
+        }
+//        Intent intent = new Intent(WRITE_COMMAND_INTENT);
+//        intent.putExtra(COMMAND_PART2, OTA_PATH_IN_RECOVERY_PRE + "/" + flashFilename);
+//        startService(intent);
+        
+        {
+        	((PowerManager) getSystemService(Context.POWER_SERVICE)).reboot("recovery");
+        	//startService(new Intent(REBOOT_INTENT));
+        }
+    }
     @SuppressLint("SdCardPath")
     private void flashUpdate() {
         if (getPackageManager().checkPermission(PERMISSION_ACCESS_CACHE_FILESYSTEM,
@@ -1235,7 +1288,11 @@ public class UpdateService
                         boolean getFull = ((initialFile == null) || (deltaDownloadSize > fullDownloadSize));
 
                         long requiredSpace = getRequiredSpace(deltas, getFull);
-                        long freeSpace = (new StatFs(config.getPathBase())).getAvailableBytes();
+                        /* long freeSpace = (new StatFs(config.getPathBase())).getAvailableBytes(); */
+                        StatFs stat = new StatFs(config.getPathBase());
+                        long blockSize = stat.getBlockSize();
+                        long availableBlocks = stat.getAvailableBlocks();
+                        long freeSpace = availableBlocks * blockSize;
                         if (freeSpace < requiredSpace) {
                             updateState(STATE_ERROR_DISK_SPACE, null, freeSpace, requiredSpace,
                                     null, null);
@@ -1250,6 +1307,7 @@ public class UpdateService
                             return;
 
                         // Reconstruct flashable ZIP
+                        Logger.d("Seven***** initialFile = "+initialFile);
                         if (!getFull
                                 && !applyPatches(deltas, initialFile, initialFileNeedsProcessing))
                             return;
