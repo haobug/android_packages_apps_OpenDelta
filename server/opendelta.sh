@@ -27,7 +27,7 @@ BIN_ZIPADJUST=$HOME/delta/zipadjust
 
 #FILE_MATCH=omni-*.zip
 #PATH_CURRENT=$HOME/omni/out/target/product/$DEVICE
-FILE_MATCH=update*.zip
+FILE_MATCH=X-S01A*.zip
 PATH_CURRENT=$HOME/delta/curr/$DEVICE
 PATH_LAST=$HOME/delta/last/$DEVICE
 
