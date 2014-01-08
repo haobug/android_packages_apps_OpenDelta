@@ -67,6 +67,15 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:onClick="onButtonFlashNowClick" />
+        
+        <Button
+            android:id="@+id/button_test_merge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_test_merge"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:onClick="onButtonTestMergeClick" />
     </LinearLayout>
 
 </RelativeLayout>

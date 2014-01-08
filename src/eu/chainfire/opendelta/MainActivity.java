@@ -33,9 +33,11 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,9 +45,12 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
+import com.hikemobile.opendelta.ApplyPatch;
 
 public class MainActivity extends Activity {
     private TextView title = null;
@@ -80,6 +85,8 @@ public class MainActivity extends Activity {
         flashNow = (Button) findViewById(R.id.button_flash_now);
         
         config = Config.getInstance(this);
+        
+        ApplyPatch.setContext(getApplicationContext());
     }
 
     @Override
@@ -334,6 +341,36 @@ public class MainActivity extends Activity {
 
     public void onButtonFlashNowClick(View v) {
         flashRecoveryWarning.run();
+    }
+    
+    public void onButtonTestMergeClick(View v) {
+    	/* 497dd554e600a6c43f35c6d8da1b6706ac7889e6 before patch */
+    	if(0 == ApplyPatch.applypatchCheck("/system/app/ApplicationGuide.odex",
+    			"497dd554e600a6c43f35c6d8da1b6706ac7889e6")){
+    		Logger.d("Can be patched");
+    		
+    		String src_file = "/system/app/ApplicationGuide.odex";
+    		String dst_file = new File(src_file).getName();
+    		
+    		String out_prefix = Environment.getExternalStorageDirectory().getAbsolutePath();
+    		out_prefix = "/sdcard";
+    		
+    		int ret = ApplyPatch.applypatchPatch(src_file,
+    				out_prefix + "/" + dst_file,
+    				"c712ba89d54fb3e480d5e9d177dcf0d8b9618d61", 
+    				19328, "497dd554e600a6c43f35c6d8da1b6706ac7889e6:"+ out_prefix +"/ApplicationGuide.odex.p");
+    		if(ret == 0)
+    			Logger.d("%s Patched successfully",src_file);
+    		else
+    			Logger.d("it returns %d", ret);
+    		
+    	} else if(0 == ApplyPatch.applypatchCheck("/system/app/ApplicationGuide.odex", 
+    			"c712ba89d54fb3e480d5e9d177dcf0d8b9618d61")){
+    		Logger.d("Already patched");
+    	}  else {
+    		Logger.d("Can not be patched");
+    	}
+        return;
     }
     
     private Runnable flashRecoveryWarning = new Runnable() {        

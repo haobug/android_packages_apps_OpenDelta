@@ -47,4 +47,5 @@
 
     <string name="button_check_now">Check now &#8230;</string>
     <string name="button_flash_now">Flash now</string>
+    <string name="button_test_merge">Test Merge</string>
 </resources>

@@ -11,3 +11,5 @@ LOCAL_C_INCLUDES += external/zlib
 LOCAL_SHARED_LIBRARIES := libz
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(LOCAL_PATH)/applypatch/Android.mk
