@@ -122,11 +122,19 @@ public class Scheduler
     private void setDetectSleepAlarm() {
         Logger.i("Setting sleep detection alarm (exact) for %s",
                 sdfLog.format(new Date(System.currentTimeMillis() + ALARM_DETECT_SLEEP_TIME)));
-        alarmManager.setExact(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + ALARM_DETECT_SLEEP_TIME,
-                alarmDetectSleep
-        );
+        if(android.os.Build.VERSION.SDK_INT < 19) {
+            alarmManager.set(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + ALARM_DETECT_SLEEP_TIME,
+                    alarmDetectSleep
+            );
+        } else {
+            alarmManager.setExact(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + ALARM_DETECT_SLEEP_TIME,
+                    alarmDetectSleep
+            );
+        }
     }
 
     private void cancelDetectSleepAlarm() {
