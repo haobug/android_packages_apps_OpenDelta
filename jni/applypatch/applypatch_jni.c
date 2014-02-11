@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <jni.h>
 #include "applypatch_jni.h"
+#include "Zip.h"
+#include "expr.h"
+#include "mtdutils/mounts.h"
+#include "install.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,15 +30,24 @@ static jint JNICALL NAME(applypatchNative)(JNIEnv *env, jclass clazz,
 		argv[i] = (*env)->GetStringUTFChars(env, arg, 0);
 		LOGD("[form jni] argv[%d]:%s", i, argv[i]);
 	}
-	ret = main(argc, argv);
+	ret = applypatch_main(argc, argv);
 	free(argv);
 	return ret;
 }
 
+#define SCRIPT_NAME "META-INF/com/google/android/updater-script"
+/*static jint JNICALL NAME(applypatchZip)(JNIEnv *env, jclass clazz,
+										jstring zip_filename){
+	int ret = 0;
+	
+
+	return ret;
+}*/
 
 static JNINativeMethod methods[] = {
   { "sayHello", "()Ljava/lang/String;", (void *)NAME(sayHello) },
-  { "applypatchNative","(I[Ljava/lang/String;)I",(void *)NAME(applypatchNative) }
+  { "applypatchNative","(I[Ljava/lang/String;)I",(void *)NAME(applypatchNative) },
+/*  { "applypatchZip","(Ljava/lang/String;)I",(void *) NAME(applypatchZip) },*/
 };
 
 static const char *classPathName = "com/hikemobile/opendelta/ApplyPatch";

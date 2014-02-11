@@ -3,6 +3,9 @@
 LOCAL_PATH := $(call my-dir)
 
 edify_src_files := \
+	main.c \
+	parser.c \
+	lex.yy.c \
 	expr.c
 
 # "-x c" forces the lex/yacc files to be compiled as c;
@@ -20,3 +23,4 @@ LOCAL_CFLAGS := $(edify_cflags)
 LOCAL_MODULE := libedify
 
 include $(BUILD_STATIC_LIBRARY)
+

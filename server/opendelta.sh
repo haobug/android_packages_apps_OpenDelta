@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source config.sh
 # Script to generate delta files for OpenDelta - by Jorrit 'Chainfire' Jongma
 
 # Get device either from $DEVICE set by calling script, or first parameter
@@ -19,15 +20,16 @@ fi
 
 #HOME=/home/build
 HOME=/home2/tmp/merge_delta/build
+if test -n "$2" then
+    HOME="$2";
+fi
 
 BIN_JAVA=java
 BIN_MINSIGNAPK=$HOME/delta/minsignapk.jar
 BIN_XDELTA=$HOME/delta/xdelta3
 BIN_ZIPADJUST=$HOME/delta/zipadjust
 
-#FILE_MATCH=omni-*.zip
 #PATH_CURRENT=$HOME/omni/out/target/product/$DEVICE
-FILE_MATCH=X-S01A*.zip
 PATH_CURRENT=$HOME/delta/curr/$DEVICE
 PATH_LAST=$HOME/delta/last/$DEVICE
 

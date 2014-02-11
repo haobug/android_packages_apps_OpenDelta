@@ -185,7 +185,7 @@ static int LoadPartitionContents(const char* filename, FileContents* file) {
     const char* magic = strtok(copy, ":");
 
     enum PartitionType type;
-
+	LOGD("filename:%s", filename);
 #if 0 //wschen 2012-05-24
     if (strcmp(magic, "MTD") == 0) {
         type = MTD;
@@ -286,7 +286,7 @@ static int LoadPartitionContents(const char* filename, FileContents* file) {
 #else
             printf("open emmc partition \"%s\"\n", partition);
             if (!strcmp(partition, "boot")) {
-                dev = open("/dev/bootimg", O_RDWR);
+                dev = open("/dev/bootimg", O_RDONLY);
                 if (dev == -1) {
                     printf("failed to open emmc partition \"/dev/bootimg\": %s\n", strerror(errno));
                     return -1;
@@ -296,7 +296,7 @@ static int LoadPartitionContents(const char* filename, FileContents* file) {
 
                 strcpy(dev_name, "/dev/");
                 strcat(dev_name, partition);
-                dev = open(dev_name, O_RDWR);
+                dev = open(dev_name, O_RDONLY);
                 if (dev == -1) {
                     printf("failed to open emmc partition \"%s\": %s\n",
                            dev_name, strerror(errno));

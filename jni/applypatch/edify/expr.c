@@ -32,6 +32,7 @@ int BooleanString(const char* s) {
     return s[0] != '\0';
 }
 
+/* run command and return the result as string(char pointer) */
 char* Evaluate(State* state, Expr* expr) {
     Value* v = expr->fn(expr->name, state, expr->argc, expr->argv);
     if (v == NULL) return NULL;
@@ -45,6 +46,7 @@ char* Evaluate(State* state, Expr* expr) {
     return result;
 }
 
+/* run command and return the result as Value pointer */
 Value* EvaluateValue(State* state, Expr* expr) {
     return expr->fn(expr->name, state, expr->argc, expr->argv);
 }
@@ -64,6 +66,7 @@ void FreeValue(Value* v) {
     free(v);
 }
 
+/*  */
 Value* ConcatFn(const char* name, State* state, int argc, Expr* argv[]) {
     if (argc == 0) {
         return StringValue(strdup(""));
@@ -350,6 +353,13 @@ static int fn_entries = 0;
 static int fn_size = 0;
 NamedFunction* fn_table = NULL;
 
+/* RegisterFunction 
+ * Register a function for recovery script to use
+ *
+ * @name, the name of script command
+ * @fn, the function pointer of the associated function
+ * returns, void;
+ */
 void RegisterFunction(const char* name, Function fn) {
     if (fn_entries >= fn_size) {
         fn_size = fn_size*2 + 1;
@@ -366,10 +376,16 @@ static int fn_entry_compare(const void* a, const void* b) {
     return strcmp(na, nb);
 }
 
+/* FinishRegistration 
+ * After Registation sort function list with qsort for future bsearch
+ */
 void FinishRegistration() {
     qsort(fn_table, fn_entries, sizeof(NamedFunction), fn_entry_compare);
 }
 
+/* FindFunction 
+ * bsearch function by function name
+ */
 Function FindFunction(const char* name) {
     NamedFunction key;
     key.name = name;

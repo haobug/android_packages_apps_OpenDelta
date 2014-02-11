@@ -1,5 +1,8 @@
 #ifndef _Included_com_hikemobile_opendelta_ApplyPatch
 #define _Included_com_hikemobile_opendelta_ApplyPatch
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* JNI naming macros */
 #define CLASS   com_hikemobile_opendelta_ApplyPatch
@@ -14,16 +17,16 @@
 #include <android/log.h>
 
 #define  LOG_TAG    "OpenDelta"
-#define DEBUG (1)
+#define LOG_DEBUG (1)
 
-#if DEBUG
+#ifdef LOG_DEBUG
 #define  LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE,LOG_TAG,__VA_ARGS__)
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 #define  LOGW(...)  __android_log_print(ANDROID_LOG_WARN,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 #define  LOGA(...)  __android_log_print(ANDROID_LOG_FATAL,LOG_TAG,__VA_ARGS__)
-#define printf(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define printf LOGE
 #else /* no DEBUG */
 #define  LOGV(...)
 #define  LOGI(...)
@@ -32,5 +35,8 @@
 #define  LOGE(...)
 #define  LOGA(...)
 #endif /* no DEBUG */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _Included_com_hikemobile_opendelta_ApplyPatch */

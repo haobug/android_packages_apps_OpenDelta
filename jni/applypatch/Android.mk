@@ -15,12 +15,21 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := applypatch.c bspatch.c freecache.c imgpatch.c utils.c applypatch_jni.c main.c 
-LOCAL_MODULE := libapplypatch
-LOCAL_MODULE_TAGS := eng
-LOCAL_C_INCLUDES += $(LOCAL_PATH)
-LOCAL_LDLIBS:=-L$(SYSROOT)/usr/lib -llog
-LOCAL_STATIC_LIBRARIES += libmtdutils libmincrypt libbz  libminelf libz libedify
+LOCAL_SRC_FILES := applypatch.c bspatch.c freecache.c imgpatch.c \
+	utils.c applypatch_jni.c main.c
+LOCAL_MODULE := applypatch
+LOCAL_C_INCLUDES += $(LOCAL_PATH) \
+	$(LOCAL_PATH)/mtdutils \
+	$(LOCAL_PATH)/mincrypt \
+	$(LOCAL_PATH)/minelf \
+	$(LOCAL_PATH)/bzip2 \
+	$(LOCAL_PATH)/zlib \
+	$(LOCAL_PATH)/minzip \
+	$(LOCAL_PATH)/updater \
+	$(LOCAL_PATH)/edify
+LOCAL_LDLIBS:=-L$(SYSROOT)/usr/lib -llog 
+LOCAL_STATIC_LIBRARIES += libmtdutils libmincrypt libbz  libminelf \
+	libz libedify libminzip libbison 
 include $(BUILD_SHARED_LIBRARY)
 
 include $(LOCAL_PATH)/mtdutils/Android.mk \
@@ -28,6 +37,7 @@ include $(LOCAL_PATH)/mtdutils/Android.mk \
 	$(LOCAL_PATH)/minelf/Android.mk \
 	$(LOCAL_PATH)/bzip2/Android.mk \
 	$(LOCAL_PATH)/zlib/Android.mk \
+	$(LOCAL_PATH)/minzip/Android.mk \
 	$(LOCAL_PATH)/edify/Android.mk
 	
 

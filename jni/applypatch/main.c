@@ -179,7 +179,7 @@ int PatchMode(int argc, char** argv) {
 // to read the source data.  See the comments for the
 // LoadMTDContents() function above for the format of such a filename.
 
-int main(int argc, char** argv) {
+int applypatch_main(int argc, char** argv) {
     if (argc < 2) {
       usage:
         printf(
