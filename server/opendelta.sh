@@ -18,7 +18,12 @@ fi
 # ------ CONFIGURATION ------
 
 #HOME=/home/build
+if test ${BASE_DIR};
+then
+HOME=${BASE_DIR};
+else
 HOME=/home2/tmp/merge_delta/build
+fi
 
 BIN_JAVA=java
 BIN_MINSIGNAPK=$HOME/delta/minsignapk.jar
@@ -83,8 +88,8 @@ mkdir out
 
 $BIN_ZIPADJUST --decompress $PATH_CURRENT/$FILE_CURRENT work/current.zip
 $BIN_ZIPADJUST --decompress $PATH_LAST/$FILE_LAST work/last.zip
-$BIN_JAVA -Xmx1024m -jar $BIN_MINSIGNAPK $KEY_X509 $KEY_PK8 work/current.zip work/current_signed.zip
-$BIN_JAVA -Xmx1024m -jar $BIN_MINSIGNAPK $KEY_X509 $KEY_PK8 work/last.zip work/last_signed.zip
+$BIN_JAVA -Xmx4096m -jar $BIN_MINSIGNAPK $KEY_X509 $KEY_PK8 work/current.zip work/current_signed.zip
+$BIN_JAVA -Xmx4096m -jar $BIN_MINSIGNAPK $KEY_X509 $KEY_PK8 work/last.zip work/last_signed.zip
 $BIN_XDELTA -9evfS none -s work/last.zip work/current.zip out/$FILE_LAST_BASE.update
 $BIN_XDELTA -9evfS none -s work/current.zip work/current_signed.zip out/$FILE_LAST_BASE.sign
 

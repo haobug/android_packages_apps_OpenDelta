@@ -1,0 +1,62 @@
+#!/bin/bash
+#device=$(adb shell getprop ro.product.device |head -c -2);
+#version=$(adb shell getprop ckt.internal.version |head -c -2);
+device=X_S01A_HIKe;
+version='';
+echo "${device},${version}";
+base_last=${BASE_DIR}/delta/last;
+base_curr=${BASE_DIR}/delta/curr;
+base_full=${BASE_DIR}/delta/full;
+have_last='';
+while test $# -ge 1;
+do
+    full=$1;
+    tmp_dir=/tmp/unfull$RANDOM
+    #new_name="full-`echo ${full%.*}|tr -d '\n' |tail -c 6`.zip";
+    if test ! -e "${full}";
+    then
+        echo "${full} does not exist";
+        exit 2;
+    fi
+        mkdir -p ${base_last}/${device};
+        mkdir -p ${base_curr}/${device};
+        mkdir -p ${base_full}/${device};
+    if test `zipinfo ${full} |grep update.zip |wc -l` -gt 0;
+    then
+        is_out_fmt=1;
+        unzip -o ${full} -d ${tmp_dir} update.zip;
+    else
+        is_out_fmt=0;
+        mkdir -p ${tmp_dir};
+        cp ${full} ${tmp_dir}/update.zip;
+    fi
+    version=`unzip -c -jo ${tmp_dir}/update.zip system/build.prop |grep ckt.internal.version |cut -d= -f2`;
+    new_name="${version}.zip";
+    echo ${new_name};
+
+    if test ! -e ${base_last}/${device};
+    then
+        mkdir -p ${base_last}/${device};
+    fi
+    if test -z ${have_last};
+    then
+        cp -fv ${tmp_dir}/update.zip ${base_last}/${device}/${new_name};
+        have_last=1;
+        last_name=${new_name};
+    fi
+
+    if test ! -e ${base_curr}/${device};
+    then
+        mkdir -p ${base_curr}/${device};
+    fi
+    cp -fv ${tmp_dir}/update.zip ${base_curr}/${device}/${new_name};
+    if test ! -e ${base_full}/${device};
+    then
+        mkdir -p ${base_full}/${device};
+    fi
+    cp -fv ${tmp_dir}/update.zip ${base_full}/${device}/${new_name};
+    android_packages_apps_OpenDelta/server/opendelta.sh ${device}
+    rm -rf ${base_curr}/${device}/${new_name}
+    rm -rf ${tmp_dir};
+    shift;
+done
