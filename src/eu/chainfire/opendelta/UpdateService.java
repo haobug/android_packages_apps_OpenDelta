@@ -982,7 +982,15 @@ public class UpdateService
     
     @SuppressLint("SdCardPath")
     private void flashUpdateMTK() {    	
-        if (getPackageManager().checkPermission(PERMISSION_ACCESS_CACHE_FILESYSTEM,
+    	// user superuser way to write cache and reboot the phone
+    	String flashFilename = prefs.getString(PREF_READY_FILENAME_NAME,
+                PREF_READY_FILENAME_DEFAULT);
+        prefs.edit().putString(PREF_READY_FILENAME_NAME, PREF_READY_FILENAME_DEFAULT).commit();
+        
+    	RootCmd.run(String.format("echo \"--update_package=%s\" > %s",
+    			flashFilename, "/cache/recovery/command"));
+    	RootCmd.run("reboot recovery");
+        /*if (getPackageManager().checkPermission(PERMISSION_ACCESS_CACHE_FILESYSTEM,
                 getPackageName()) != PackageManager.PERMISSION_GRANTED) {
             Logger.d("[%s] required beyond this point", PERMISSION_ACCESS_CACHE_FILESYSTEM);
             return;
@@ -1025,6 +1033,7 @@ public class UpdateService
         	((PowerManager) getSystemService(Context.POWER_SERVICE)).reboot("recovery");
         	//startService(new Intent(REBOOT_INTENT));
         }
+        */
     }
     @SuppressLint("SdCardPath")
     private void flashUpdate() {
