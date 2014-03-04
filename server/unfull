@@ -40,6 +40,7 @@ do
     fi
     if test -z ${have_last};
     then
+        rm -rf ${base_last}/${device}/*;
         cp -fv ${tmp_dir}/update.zip ${base_last}/${device}/${new_name};
         have_last=1;
         last_name=${new_name};
@@ -49,6 +50,7 @@ do
     then
         mkdir -p ${base_curr}/${device};
     fi
+    rm -rf ${base_curr}/${device}/*;
     cp -fv ${tmp_dir}/update.zip ${base_curr}/${device}/${new_name};
     if test ! -e ${base_full}/${device};
     then
