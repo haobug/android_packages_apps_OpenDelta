@@ -59,6 +59,8 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -393,6 +395,30 @@ public class UpdateService
 
     private byte[] downloadUrlMemory(String url) {
         Logger.d("download: %s", url);
+        String filename = url.substring(url.lastIndexOf('/'));
+        File file = new File(config.getPathBase() + filename);
+        if(file.exists()){
+        	try {
+				int len = (int) file.length();
+				if ((len >= 0) && (len < 1024 * 1024)) {
+	                byte[] ret = new byte[len];
+	                InputStream in =  new FileInputStream(file);
+	                int pos = 0;
+	                while (pos < len) {
+	                    int r = in.read(ret, pos, len - pos);
+	                    pos += r;
+	                    if (r <= 0)
+	                        return null;
+	                }
+	                return ret;
+	            }
+				return null;
+			} catch (Exception e) {
+				Logger.ex(e);
+			}
+        } else {
+        	return null;
+        }
         try {
             HttpParams params = new BasicHttpParams();
             HttpConnectionParams.setConnectionTimeout(params, 10000);
@@ -436,8 +462,43 @@ public class UpdateService
             }
         }
 
-        if (f.exists())
-            f.delete();
+        if (f.exists()){
+            long recv = 0;
+            long len = f.length();
+
+            byte[] buffer = new byte[262144];            
+            boolean is_same = false;
+            InputStream is = null;
+
+            try {
+                is = new FileInputStream(f);
+                int r;
+                while ((r = is.read(buffer)) > 0) {
+                    if (digest != null)
+                        digest.update(buffer, 0, r);
+
+                    recv += (long) r;
+                    if (progressListener != null)
+                        progressListener.onProgress(((float) recv / (float) len) * 100f, recv,
+                                len);
+                }
+            } catch (Exception e) {
+            	Logger.ex(e);
+            	return false;
+            }
+
+            if (digest != null) {
+                String MD5 = new BigInteger(1, digest.digest()).toString(16).toLowerCase(
+                        Locale.ENGLISH);
+                while (MD5.length() < 32)
+                    MD5 = "0" + MD5;
+                is_same = MD5.equals(matchMD5);
+            }
+            if(is_same)
+                return true;
+            else
+                f.delete();
+        }
         try {
             HttpParams params = new BasicHttpParams();
             HttpConnectionParams.setConnectionTimeout(params, 10000);
