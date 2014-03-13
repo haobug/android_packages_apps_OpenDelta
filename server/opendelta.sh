@@ -27,7 +27,7 @@ fi
 
 BIN_JAVA=java
 BIN_MINSIGNAPK=$HOME/delta/minsignapk.jar
-BIN_XDELTA="$HOME/delta/xdelta3 -B 2147483648"
+BIN_XDELTA="$HOME/delta/xdelta3"
 BIN_ZIPADJUST=$HOME/delta/zipadjust
 
 #FILE_MATCH=omni-*.zip
