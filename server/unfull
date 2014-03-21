@@ -4,9 +4,16 @@
 device=X_S01A_HIKe;
 version='';
 echo "${device},${version}";
+if [[ ${BASE_DIR} && ${BASE_DIR-x} ]];
+then
 base_last=${BASE_DIR}/delta/last;
 base_curr=${BASE_DIR}/delta/curr;
 base_full=${BASE_DIR}/delta/full;
+else
+    echo "$0, ERROR Please set BASE_DIR in environment";
+    exit 5;
+fi
+
 have_last='';
 while test $# -ge 1;
 do
