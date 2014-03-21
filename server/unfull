@@ -1,7 +1,7 @@
 #!/bin/bash
 #device=$(adb shell getprop ro.product.device |head -c -2);
 #version=$(adb shell getprop ckt.internal.version |head -c -2);
-device=X_S01A_HIKe;
+device='';
 version='';
 echo "${device},${version}";
 if [[ ${BASE_DIR} && ${BASE_DIR-x} ]];
@@ -25,9 +25,6 @@ do
         echo "${full} does not exist";
         exit 2;
     fi
-        mkdir -p ${base_last}/${device};
-        mkdir -p ${base_curr}/${device};
-        mkdir -p ${base_full}/${device};
     if test `zipinfo ${full} |grep update.zip |wc -l` -gt 0;
     then
         is_out_fmt=1;
@@ -38,6 +35,7 @@ do
         cp ${full} ${tmp_dir}/update.zip;
     fi
     version=`unzip -c -jo ${tmp_dir}/update.zip system/build.prop |grep ckt.internal.version |cut -d= -f2`;
+    device=`unzip -c -jo ${tmp_dir}/update.zip system/build.prop |grep ro.product.device= |cut -d= -f2`;
     new_name="${version}.zip";
     echo ${new_name};
 
