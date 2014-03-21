@@ -1,20 +1,110 @@
 #!/bin/bash
 #device=$(adb shell getprop ro.product.device |head -c -2);
 #version=$(adb shell getprop ckt.internal.version |head -c -2);
+httpRequest(){
+    exit_code=$?;
+    echo "${exit_code}httpRequest";
+    ret_status=2;
+    if test ${exit_code} -eq 0;
+    then
+        ret_status=3;
+    fi
+    log "status=${ret_status}";
+    log "jsonResult=$(cat ${jsonResult})";
+    echo curl -X POST \
+        --data-urlencode "progressId=${progressId}" \
+        --data-urlencode "status=${ret_status}" \
+        --data-urlencode "logPath=${log_file}" \
+        --data-urlencode "jsonResult=$(cat ${jsonResult})" \
+        http://localhost:8080/us/shellResult.cgi >> ${log_file}
+    curl -X POST \
+        --data-urlencode "progressId=${progressId}" \
+        --data-urlencode "status=${ret_status}" \
+        --data-urlencode "logPath=${log_file}" \
+        --data-urlencode "jsonResult=$(cat ${jsonResult})" \
+        http://localhost:8080/us/shellResult > /dev/null 2>&1;
+}
+cleanUp(){
+    rm -rf ${tmp_dir};
+    rm -rf ${jsonResult};
+}
+trap 'httpRequest;cleanUp;' EXIT SIGINT SIGTERM SIGQUIT SIGKILL;
+
+log(){
+    echo $@ |tee ${log_file};
+}
+dbg(){
+    echo $@ |tee -a ${log_file};
+}
+
 device='';
 version='';
-echo "${device},${version}";
 if [[ ${BASE_DIR} && ${BASE_DIR-x} ]];
 then
 base_last=${BASE_DIR}/delta/last;
 base_curr=${BASE_DIR}/delta/curr;
 base_full=${BASE_DIR}/delta/full;
+base_publish=${BASE_DIR}/publish;
+log_file=${BASE_DIR}/unfull$(date +%y%m%d%H%M%S).log;
+dbg ${log_file};
 else
-    echo "$0, ERROR Please set BASE_DIR in environment";
+    dbg "$0, ERROR Please set BASE_DIR in environment";
     exit 5;
 fi
 
-have_last='';
+findLast(){
+    curr_ver=$1;
+    curr_seq=$(echo ${curr_ver} |awk -F_ '{print $4}');
+    last_seq=$((${curr_seq} - 1));
+    while test ${last_seq} -ge 200;
+    do
+        if test `ls ${base_full}/${device}/*.zip |grep "_${last_seq}_"|wc -l ` -gt 0 ;
+        then
+            basename $(ls ${base_full}/${device}/*.zip |grep "_${last_seq}_");
+            break;
+        fi
+        last_seq=$((${last_seq} - 1));
+    done;
+}
+getFileSize() {
+	echo $(stat --print "%s" $1)
+}
+mkDeltaInfo(){
+    #                                  .zip
+    last=`echo $1 |tr -d '\n'|head -c -4`;
+    curr=`echo $2 |tr -d '\n'|head -c -4`;
+    echo "last=${last}";
+    echo "curr=${curr}";
+    #                                    HHMMSS
+    deltaName=`echo ${last}|tr -d '\n'|head -c -6`;
+    deltaPath="${base_publish}/${device}/${last}.update";
+    deltaSize=$(getFileSize ${deltaPath});
+    deltaVersion=${last};
+    oldVersion=$(echo $(findLast $1) |tr -d '\n'|head -c -4);
+    deltaInfo=`cat <<EOJ
+{
+"deltaName":"${deltaName}",
+"deltaPath":"${deltaPath}",
+"deltaSize":"${deltaSize}",
+"deltaVersion":"${deltaVersion}",
+"oldVersion":"${oldVersion}"}
+EOJ`;
+    if test $(getFileSize ${jsonResult}) -ne ${start_size};
+    then
+        #non first element
+        sed -i "/]}/i\," ${jsonResult};
+    fi
+    #echo ${deltaInfo} |tee -a ${jsonResult};
+    sed -i "/]}/i`echo ${deltaInfo}`" ${jsonResult};
+}
+http_data="/tmp/unfullHTTP$RANDOM.txt"
+progressId=$1;
+log "progressId=${progressId}";
+log "logPath=${log_file}";
+shift;
+jsonResult="/tmp/unfullJsonResult$RANDOM.js";
+echo -e "{\"dtoList\":[\n]}"> ${jsonResult};
+start_size=$(getFileSize ${jsonResult});
 while test $# -ge 1;
 do
     full=$1;
@@ -22,7 +112,7 @@ do
     #new_name="full-`echo ${full%.*}|tr -d '\n' |tail -c 6`.zip";
     if test ! -e "${full}";
     then
-        echo "${full} does not exist";
+        dbg "${full} does not exist";
         exit 2;
     fi
     if test `zipinfo ${full} |grep update.zip |wc -l` -gt 0;
@@ -34,22 +124,32 @@ do
         mkdir -p ${tmp_dir};
         cp ${full} ${tmp_dir}/update.zip;
     fi
-    version=`unzip -c -jo ${tmp_dir}/update.zip system/build.prop |grep ckt.internal.version |cut -d= -f2`;
+    version=`unzip -c -jo ${tmp_dir}/update.zip system/build.prop |grep ckt.internal.version= |cut -d= -f2`;
     device=`unzip -c -jo ${tmp_dir}/update.zip system/build.prop |grep ro.product.device= |cut -d= -f2`;
     new_name="${version}.zip";
-    echo ${new_name};
+    dbg ${new_name};
 
     if test ! -e ${base_last}/${device};
     then
         mkdir -p ${base_last}/${device};
     fi
-    if test -z ${have_last};
-    then
         rm -rf ${base_last}/${device}/*;
-        cp -fv ${tmp_dir}/update.zip ${base_last}/${device}/${new_name};
-        have_last=1;
-        last_name=${new_name};
-    fi
+        dbg "last_name=\"$(findLast ${version})\";"
+        last_name=$(findLast ${version});
+        if [[ ${last_name} && ${last_name-x} ]];
+        then
+            if test -f ${base_full}/${device}/${last_name};
+            then
+                cp -fv ${base_full}/${device}/${last_name} ${base_last}/${device}/${last_name};
+            else
+                dbg "not found last version zip for ${new_name}, please check";
+                exit 7;
+            fi
+        else
+            dbg "no last version, its the first";
+            rm -rf ${tmp_dir};
+            shift && continue;
+        fi
 
     if test ! -e ${base_curr}/${device};
     then
@@ -61,9 +161,10 @@ do
     then
         mkdir -p ${base_full}/${device};
     fi
-    cp -fv ${tmp_dir}/update.zip ${base_full}/${device}/${new_name};
-    android_packages_apps_OpenDelta/server/opendelta.sh ${device}
+    cp -f ${tmp_dir}/update.zip ${base_full}/${device}/${new_name};
+    $(dirname $0)/opendelta.sh ${device} > ${log_file} 2>&1 && \
+    mkDeltaInfo ${last_name} ${new_name};
     rm -rf ${base_curr}/${device}/${new_name}
     rm -rf ${tmp_dir};
-    shift;
-done
+    shift
+done;
