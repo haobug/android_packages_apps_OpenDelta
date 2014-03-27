@@ -170,7 +170,7 @@ do
         echo "Please put the key in ${base_keys}/${device}/";
         exit 8;
     fi
-    $(dirname $0)/opendelta.sh ${device} > ${log_file} 2>&1 && \
+    $(dirname $0)/opendelta.sh ${device} > ${log_file} 2>&1 || exit 9;
     mkDeltaInfo ${last_name} ${new_name};
     rm -rf ${base_curr}/${device}/${new_name}
     rm -rf ${tmp_dir};
