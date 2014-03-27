@@ -46,6 +46,7 @@ base_last=${BASE_DIR}/delta/last;
 base_curr=${BASE_DIR}/delta/curr;
 base_full=${BASE_DIR}/delta/full;
 base_publish=${BASE_DIR}/publish;
+base_keys=${BASE_DIR}/keys;
 log_file=${BASE_DIR}/unfull$(date +%y%m%d%H%M%S).log;
 dbg ${log_file};
 else
@@ -163,6 +164,12 @@ do
         mkdir -p ${base_full}/${device};
     fi
     cp -f ${tmp_dir}/update.zip ${base_full}/${device}/${new_name};
+    if [[ `ls ${base_keys}/${device}/*.x509.pem |wc -l` -lt 1 ||
+          `ls ${base_keys}/${device}/*.pk8 |wc -l` -lt 1 ]];
+    then
+        echo "Please put the key in ${base_keys}/${device}/";
+        exit 8;
+    fi
     $(dirname $0)/opendelta.sh ${device} > ${log_file} 2>&1 && \
     mkDeltaInfo ${last_name} ${new_name};
     rm -rf ${base_curr}/${device}/${new_name}

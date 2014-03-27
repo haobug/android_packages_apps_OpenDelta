@@ -38,8 +38,8 @@ PATH_LAST=$HOME/delta/last/$DEVICE
 
 #KEY_X509=$HOME/.keys/platform.x509.pem
 #KEY_PK8=$HOME/.keys/platform.pk8
-KEY_X509=$HOME/.keys/releasekey.x509.pem
-KEY_PK8=$HOME/.keys/releasekey.pk8
+KEY_X509=$HOME/keys/${DEVICE}/*.x509.pem
+KEY_PK8=$HOME/keys/${DEVICE}/*.pk8
 
 # ------ PROCESS ------
 
