@@ -11,12 +11,12 @@ httpRequest(){
     fi
     log "status=${ret_status}";
     log "jsonResult=$(cat ${jsonResult})";
-    echo curl -X POST \
-        --data-urlencode "progressId=${progressId}" \
-        --data-urlencode "status=${ret_status}" \
-        --data-urlencode "logPath=${log_file}" \
-        --data-urlencode "jsonResult=$(cat ${jsonResult})" \
-        http://localhost:8080/us/shellResult.cgi >> ${log_file}
+    echo "curl -X POST \
+        --data-urlencode \"progressId=${progressId}\" \
+        --data-urlencode \"status=${ret_status}\" \
+        --data-urlencode \"logPath=${log_file}\" \
+        --data-urlencode \"jsonResult=$(cat ${jsonResult})\" \
+        http://localhost:8080/us/shellResult.cgi" >> ${log_file}
     curl -X POST \
         --data-urlencode "progressId=${progressId}" \
         --data-urlencode "status=${ret_status}" \
@@ -28,7 +28,8 @@ cleanUp(){
     rm -rf ${tmp_dir};
     rm -rf ${jsonResult};
 }
-trap 'httpRequest;cleanUp;' EXIT SIGINT SIGTERM SIGQUIT SIGKILL;
+trap 'httpRequest;' EXIT
+trap 'cleanUp' SIGINT SIGTERM SIGQUIT SIGKILL;
 
 log(){
     echo $@ |tee ${log_file};
