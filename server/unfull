@@ -4,10 +4,10 @@
 httpRequest(){
     exit_code=$?;
     echo "${exit_code}httpRequest";
-    ret_status=2;
+    ret_status=2; # failed
     if test ${exit_code} -eq 0;
     then
-        ret_status=3;
+        ret_status=3; # success
     fi
     log "status=${ret_status}";
     log "jsonResult=$(cat ${jsonResult})";
@@ -99,6 +99,9 @@ EOJ`;
     #echo ${deltaInfo} |tee -a ${jsonResult};
     sed -i "/]}/i`echo ${deltaInfo}`" ${jsonResult};
 }
+usage(){
+    echo "unfull <progressId> <full_zip1>[,...]";
+}
 http_data="/tmp/unfullHTTP$RANDOM.txt"
 progressId=$1;
 log "progressId=${progressId}";
@@ -107,6 +110,10 @@ shift;
 jsonResult="/tmp/unfullJsonResult$RANDOM.js";
 echo -e "{\"dtoList\":[\n]}"> ${jsonResult};
 start_size=$(getFileSize ${jsonResult});
+if test $# -lt 1;
+then
+    usage && exit 1;
+fi
 while test $# -ge 1;
 do
     full=$1;
